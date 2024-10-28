@@ -8,16 +8,18 @@ $60 for 1 hour lesson
 Please place stars and share!!!
 '''
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
 import random
 import os
-os.system("cls") #clear screen from previous sessions
+os.system("clear") #clear screen from previous sessions
 import time
 import json # for cookies
 from urllib.parse import quote # to replace spaces and special characters in the URL
+import config
 
 from enum import Enum # that one is for You, my dear reader, code readability from NAKIGOE.ORG
 class Status(Enum):
@@ -27,12 +29,12 @@ class Status(Enum):
 CONNECT_WITH_NAME = False # Set to True in case you want to see the script in its true glory and burn through your monthly limit of personalized connection requests
 COOKIES_PATH = 'auth/cookies.json'
 LOCAL_STORAGE_PATH = 'auth/local_storage.json'
-user_agent = "My Standard Browser and Standard Device" # Replace with your desired user-agent string. You can find your current browser's user-agent by searching "What's my user-agent?" in a search engine
-options = webdriver.EdgeOptions()
+#user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36' # Replace with your desired user-agent string. You can find your current browser's user-agent by searching "What's my user-agent?" in a search engine
+options = Options()
 options.use_chromium = True
-options.add_argument("start-maximized")
+#options.add_argument("start-maximized")
 options.page_load_strategy = 'eager' #do not wait for images to load
-options.add_argument(f"user-agent={user_agent}")
+options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36")
 options.add_experimental_option("detach", True)
 
 s = 20 # static standard time to wait for a single component on the page to appear, in seconds; increase it if you get server-side errors «try again later», decrease the number if You do not use a VPN and have a high-speed Internet connection
@@ -51,11 +53,11 @@ for i in range(number_of_messages): #the number of messages in the directory
     message.append(text_file.read())
     text_file.close()
 
-username = "nakigoetenshi@gmail.com"
-password = "Super Mega Password"
+username = config.username
+password = config.password
 login_page = "https://www.linkedin.com/login"
 
-weekly_limit=200
+weekly_limit=30
 weekly_limit -=5 # just for the sake of safety, besides, You want to be able to add some connections by hand!
 weekly_counter = 0 #load from file!
 text_file = open("linkedin-weekly-counter.txt", "r")
@@ -63,23 +65,24 @@ weekly_counter = int(text_file.readline())
 text_file.close()
 
 search_links_array = [] # these are just examples, you have top pick people from your contacts, who allowed to browse their contacts!!!
-search_links_array.append("https://www.linkedin.com/in/barbara-stampf-81610029/") # Europe
-search_links_array.append("https://www.linkedin.com/in/marlene-helml-9789681b9/") # Austrian lawyer
-search_links_array.append("https://www.linkedin.com/in/mirko-serri-53ba085/") # Unicredit
-search_links_array.append("https://www.linkedin.com/in/gerhard-heinz/") # somebody Austria international
+#search_links_array.append("https://www.linkedin.com/in/barbara-stampf-81610029/") # Europe
+#search_links_array.append("https://www.linkedin.com/in/marlene-helml-9789681b9/") # Austrian lawyer
+#search_links_array.append("https://www.linkedin.com/in/mirko-serri-53ba085/") # Unicredit
+#search_links_array.append("https://www.linkedin.com/in/gerhard-heinz/") # somebody Austria international
 
 # Define the list of locations without duplicates
-uk_locations = ['London', 'Glasgow', 'Manchester', 'Birmingham', 'Bristol', 'Edinburgh', 'Leeds', 'Liverpool', 'Newcastle', 'Nottingham', 'Sheffield', 'Belfast', 'Brighton', 'Cardiff', 'Leicester', 'Bournemouth', 'Cambridge', 'Oxford', 'Reading', 'York', 'Aberdeen', 'Bath', 'Belfast', 'Birmingham', 'Bradford', 'Brighton', 'Bristol', 'Cambridge', 'Canterbury', 'Cardiff', 'Carlisle', 'Chester', 'Chichester', 'Coventry', 'Derby', 'Durham', 'Ely', 'Exeter', 'Gloucester', 'Hereford', 'Kingston upon Hull', 'Lancaster', 'Leeds', 'Leicester', 'Lichfield', 'Lincoln', 'Liverpool', 'City of London', 'Manchester', 'Newcastle upon Tyne', 'Norwich', 'Nottingham', 'Oxford', 'Peterborough', 'Plymouth', 'Portsmouth', 'Preston', 'Ripon', 'Salford', 'Salisbury', 'Sheffield', 'Southampton', 'St Albans', 'Stoke-on-Trent', 'Sunderland', 'Truro', 'Wakefield', 'Wells', 'Westminster', 'Winchester', 'Wolverhampton', 'Worcester', 'York']
+# uk_locations = ['London', 'Glasgow', 'Manchester', 'Birmingham', 'Bristol', 'Edinburgh', 'Leeds', 'Liverpool', 'Newcastle', 'Nottingham', 'Sheffield', 'Belfast', 'Brighton', 'Cardiff', 'Leicester', 'Bournemouth', 'Cambridge', 'Oxford', 'Reading', 'York', 'Aberdeen', 'Bath', 'Belfast', 'Birmingham', 'Bradford', 'Brighton', 'Bristol', 'Cambridge', 'Canterbury', 'Cardiff', 'Carlisle', 'Chester', 'Chichester', 'Coventry', 'Derby', 'Durham', 'Ely', 'Exeter', 'Gloucester', 'Hereford', 'Kingston upon Hull', 'Lancaster', 'Leeds', 'Leicester', 'Lichfield', 'Lincoln', 'Liverpool', 'City of London', 'Manchester', 'Newcastle upon Tyne', 'Norwich', 'Nottingham', 'Oxford', 'Peterborough', 'Plymouth', 'Portsmouth', 'Preston', 'Ripon', 'Salford', 'Salisbury', 'Sheffield', 'Southampton', 'St Albans', 'Stoke-on-Trent', 'Sunderland', 'Truro', 'Wakefield', 'Wells', 'Westminster', 'Winchester', 'Wolverhampton', 'Worcester', 'York']
 
-us_locations = ['New York', 'New Orleans', 'Detroit', 'Los Angeles', 'San Francisco', 'Seattle', 'Chicago', 'Boston', 'Washington', 'Philadelphia', 'Houston', 'Dallas', 'Miami', 'Atlanta', 'Denver', 'Phoenix', 'San Diego', 'Minneapolis', 'Tampa', 'Orlando', 'Portland', 'Austin', 'Charlotte', 'Las Vegas', 'Nashville', 'Indianapolis', 'Columbus', 'San Antonio', 'Pittsburgh', 'Cincinnati', 'Kansas City', 'Sacramento', 'Cleveland', 'Milwaukee', 'St. Louis', 'Raleigh', 'Salt Lake City', 'Baltimore', 'Hartford', 'Buffalo', 'New Haven', 'Providence', 'Richmond', 'Oklahoma City', 'Louisville', 'Memphis', 'Jacksonville', 'Birmingham', 'Rochester', 'Tucson', 'Honolulu', 'Albuquerque', 'El Paso', 'Omaha', 'Allentown', 'Baton Rouge', 'Dayton', 'Tulsa', 'Worcester', 'Fresno', 'Syracuse', 'Albany', 'Bakersfield', 'Springfield', 'Toledo', 'Grand Rapids', 'Columbia', 'Greenville', 'Charleston', 'Wichita', 'Little Rock', 'Knoxville', 'Boise', 'Madison', 'Lakeland', 'Palm Bay', 'Pensacola', 'Cape Coral', 'Port St. Lucie', 'Naples', 'Sarasota', 'Ocala', 'Bridgeport', 'Newark', 'Wilmington', 'Winston-Salem', 'Greensboro', 'Reno', 'Spokane', 'Durham', 'Winston', 'Salem', 'Bakersfield', 'Stockton', 'Birmingham', 'Baton Rouge', 'Richmond', 'Des Moines', 'Harrisburg', 'Hartford', 'Jackson', 'Little Rock', 'Springfield', 'Columbia', 'Charleston', 'Wichita', 'Boise', 'Fargo', 'Sioux Falls', 'Billings', 'Cheyenne', 'Helena', 'Juneau', 'Honolulu', 'Anchorage', 'Fairbanks', 'Sitka', 'Ketchikan', 'Hilo', 'Kailua', 'Kapole']
+# us_locations = ['New York', 'New Orleans', 'Detroit', 'Los Angeles', 'San Francisco', 'Seattle', 'Chicago', 'Boston', 'Washington', 'Philadelphia', 'Houston', 'Dallas', 'Miami', 'Atlanta', 'Denver', 'Phoenix', 'San Diego', 'Minneapolis', 'Tampa', 'Orlando', 'Portland', 'Austin', 'Charlotte', 'Las Vegas', 'Nashville', 'Indianapolis', 'Columbus', 'San Antonio', 'Pittsburgh', 'Cincinnati', 'Kansas City', 'Sacramento', 'Cleveland', 'Milwaukee', 'St. Louis', 'Raleigh', 'Salt Lake City', 'Baltimore', 'Hartford', 'Buffalo', 'New Haven', 'Providence', 'Richmond', 'Oklahoma City', 'Louisville', 'Memphis', 'Jacksonville', 'Birmingham', 'Rochester', 'Tucson', 'Honolulu', 'Albuquerque', 'El Paso', 'Omaha', 'Allentown', 'Baton Rouge', 'Dayton', 'Tulsa', 'Worcester', 'Fresno', 'Syracuse', 'Albany', 'Bakersfield', 'Springfield', 'Toledo', 'Grand Rapids', 'Columbia', 'Greenville', 'Charleston', 'Wichita', 'Little Rock', 'Knoxville', 'Boise', 'Madison', 'Lakeland', 'Palm Bay', 'Pensacola', 'Cape Coral', 'Port St. Lucie', 'Naples', 'Sarasota', 'Ocala', 'Bridgeport', 'Newark', 'Wilmington', 'Winston-Salem', 'Greensboro', 'Reno', 'Spokane', 'Durham', 'Winston', 'Salem', 'Bakersfield', 'Stockton', 'Birmingham', 'Baton Rouge', 'Richmond', 'Des Moines', 'Harrisburg', 'Hartford', 'Jackson', 'Little Rock', 'Springfield', 'Columbia', 'Charleston', 'Wichita', 'Boise', 'Fargo', 'Sioux Falls', 'Billings', 'Cheyenne', 'Helena', 'Juneau', 'Honolulu', 'Anchorage', 'Fairbanks', 'Sitka', 'Ketchikan', 'Hilo', 'Kailua', 'Kapole']
 
-linkedin_occupations = ['Academic Advisor', 'Accountant', 'Actor', 'Advocate', 'Alumni Relations Officer', 'Archeologist', 'Architect', 'Artist', 'Artistic Director', 'Astronomer', 'Auditor', 'Bank Teller', 'Biologist', 'Blogger', 'Botanist', 'Career Counselor', 'Carpenter', 'Chef', 'Chemist', 'Civic Engagement Leader', 'Coach', 'Community Health Worker', 'Community Manager', 'Consultant', 'Credit Analyst', 'Cultural Coordinator', 'Customer Service Representative', 'Dance Teacher', 'Data Analyst', 'Digital Content Creator', 'Ecologist', 'Economist', 'Editor', 'Education Consultant', 'Electrician', 'Engineer', 'Entrepreneur', 'Environmental Advocate', 'Events Organizer', 'Financial Advisor', 'Fitness Trainer', 'Freelancer', 'Fundraiser', 'Geologist', 'Graduate Assistant', 'Graphic Designer', 'Healthcare Assistant', 'Historian', 'Hospitality Manager', 'Influencer', 'Instructor', 'Insurance Agent', 'Interior Designer', 'Investment Banker', 'Journalist', 'Language Interpreter', 'Lecturer', 'Legal Advisor', 'Librarian', 'Marketing Assistant', 'Mechanic', 'Mentor', 'Meteorologist', 'Mortgage Advisor', 'Musician', 'Non-Profit Organizer', 'Nurse', 'Nutritionist', 'Outreach Coordinator', 'Personal Trainer', 'Photographer', 'Physicist', 'Physiotherapist', 'Plumber', 'Producer', 'Program Coordinator', 'Project Manager', 'Public Relations Officer', 'Publisher', 'Real Estate Agent', 'Research Assistant', 'Retail Manager', 'Risk Manager', 'SEO Specialist', 'Salesperson', 'Social Worker', 'Software Engineer', 'Sports Coach', 'Start-up Founder', 'Stock Broker', 'Student Ambassador', 'Student Union Officer', 'Sustainability Officer', 'Tax Consultant', 'Teacher', 'Theater Director', 'Tour Guide', 'Translator', 'Travel Blogger', 'Tutor', 'UX/UI Designer', 'Videographer', 'Volunteer Coordinator', 'Web Developer', 'Writer', 'Youth Worker']
+# linkedin_occupations = ['Academic Advisor', 'Accountant', 'Actor', 'Advocate', 'Alumni Relations Officer', 'Archeologist', 'Architect', 'Artist', 'Artistic Director', 'Astronomer', 'Auditor', 'Bank Teller', 'Biologist', 'Blogger', 'Botanist', 'Career Counselor', 'Carpenter', 'Chef', 'Chemist', 'Civic Engagement Leader', 'Coach', 'Community Health Worker', 'Community Manager', 'Consultant', 'Credit Analyst', 'Cultural Coordinator', 'Customer Service Representative', 'Dance Teacher', 'Data Analyst', 'Digital Content Creator', 'Ecologist', 'Economist', 'Editor', 'Education Consultant', 'Electrician', 'Engineer', 'Entrepreneur', 'Environmental Advocate', 'Events Organizer', 'Financial Advisor', 'Fitness Trainer', 'Freelancer', 'Fundraiser', 'Geologist', 'Graduate Assistant', 'Graphic Designer', 'Healthcare Assistant', 'Historian', 'Hospitality Manager', 'Influencer', 'Instructor', 'Insurance Agent', 'Interior Designer', 'Investment Banker', 'Journalist', 'Language Interpreter', 'Lecturer', 'Legal Advisor', 'Librarian', 'Marketing Assistant', 'Mechanic', 'Mentor', 'Meteorologist', 'Mortgage Advisor', 'Musician', 'Non-Profit Organizer', 'Nurse', 'Nutritionist', 'Outreach Coordinator', 'Personal Trainer', 'Photographer', 'Physicist', 'Physiotherapist', 'Plumber', 'Producer', 'Program Coordinator', 'Project Manager', 'Public Relations Officer', 'Publisher', 'Real Estate Agent', 'Research Assistant', 'Retail Manager', 'Risk Manager', 'SEO Specialist', 'Salesperson', 'Social Worker', 'Software Engineer', 'Sports Coach', 'Start-up Founder', 'Stock Broker', 'Student Ambassador', 'Student Union Officer', 'Sustainability Officer', 'Tax Consultant', 'Teacher', 'Theater Director', 'Tour Guide', 'Translator', 'Travel Blogger', 'Tutor', 'UX/UI Designer', 'Videographer', 'Volunteer Coordinator', 'Web Developer', 'Writer', 'Youth Worker']
 
 custom_search_array = []
 
-for location in uk_locations:
-    for occupation in linkedin_occupations:
-        custom_search_array.append(f"https://www.linkedin.com/search/results/people/?keywords={quote(occupation)}%20{quote(location)}&network=%5B%22S%22%5D")
+# for location in uk_locations:
+#     for occupation in linkedin_occupations:
+#         custom_search_array.append(f"https://www.linkedin.com/search/results/people/?keywords={quote(occupation)}%20{quote(location)}&network=%5B%22S%22%5D")
+custom_search_array = "https://www.linkedin.com/search/results/people/?activelyHiringForJobTitles=%5B%22-100%22%5D&geoUrn=%5B%22106057199%22%5D&keywords=tech&network=%5B%22S%22%2C%22O%22%5D&origin=FACETED_SEARCH"
 
 links = custom_search_array if custom_search_array else search_links_array
 
@@ -162,7 +165,7 @@ def navigate_and_check(probe_page):
 def login():
     wait.until(EC.element_to_be_clickable((By.XPATH, '//input[@id="username"]'))).send_keys(username)
     wait.until(EC.element_to_be_clickable((By.XPATH, '//input[@id="password"]'))).send_keys(password)
-    action.click(wait.until(EC.element_to_be_clickable((By.XPATH, '//button[contains(text(), "Sign in")]')))).perform()
+    action.click(wait.until(EC.element_to_be_clickable((By.XPATH, '//button[contains(text(), "Entrar")]')))).perform()
     time.sleep(15)
     
 def check_cookies_and_login():
@@ -173,7 +176,7 @@ def check_cookies_and_login():
         add_cookies(load_data_from_json(COOKIES_PATH))
         add_local_storage(load_data_from_json(LOCAL_STORAGE_PATH))
         
-        if navigate_and_check(links[0]): # just pick a first link to check if the cookies are OK
+        if navigate_and_check(links): # just pick a first link to check if the cookies are OK
             return # it is OK, you are logged in
         else: # cookies outdated, delete them
             delete_folder(get_first_folder(COOKIES_PATH)) # please keep the cookies.json and local_storage.json in the same folder to clear them successfully (or delete the outdated session files manually)
@@ -181,7 +184,7 @@ def check_cookies_and_login():
     driver.get(login_page)
     time.sleep(3)
     login()
-    navigate_and_check(links[0])
+    navigate_and_check(links)
     
 def truncate_name(name, max_length):
     if len(name) <= max_length:
@@ -250,7 +253,7 @@ def connect(name):
     
 def connect_without_name():
     try:
-        send_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//button[@aria-label="Send now"]')))
+        send_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//button[@aria-label="Send without a note"]')))
         action.click(send_button).perform()
         
         # close the irritating popup "You are growing your network", "You are approaching to the weekly limit", etc.
