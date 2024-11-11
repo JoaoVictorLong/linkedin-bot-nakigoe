@@ -31,14 +31,15 @@ COOKIES_PATH = 'auth/cookies.json'
 LOCAL_STORAGE_PATH = 'auth/local_storage.json'
 #user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36' # Replace with your desired user-agent string. You can find your current browser's user-agent by searching "What's my user-agent?" in a search engine
 options = Options()
-options.use_chromium = True
+#options.use_chromium = True
+options.add_argument('--headless')
 #options.add_argument("start-maximized")
 options.page_load_strategy = 'eager' #do not wait for images to load
 options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36")
 options.add_experimental_option("detach", True)
 
 s = 20 # static standard time to wait for a single component on the page to appear, in seconds; increase it if you get server-side errors «try again later», decrease the number if You do not use a VPN and have a high-speed Internet connection
-driver = webdriver.Edge(options=options)
+driver = webdriver.Chrome(options=options, )
 action = ActionChains(driver)
 wait = WebDriverWait(driver,s)
 
@@ -57,12 +58,12 @@ username = config.username
 password = config.password
 login_page = "https://www.linkedin.com/login"
 
-weekly_limit=30
-weekly_limit -=5 # just for the sake of safety, besides, You want to be able to add some connections by hand!
-weekly_counter = 0 #load from file!
-text_file = open("linkedin-weekly-counter.txt", "r")
-weekly_counter = int(text_file.readline())
-text_file.close()
+weekly_limit= config.weekly_limit
+#weekly_limit -=5 # just for the sake of safety, besides, You want to be able to add some connections by hand!
+weekly_counter = 1 #load from file!
+#text_file = open("linkedin-weekly-counter.txt", "r")
+#weekly_counter = int(text_file.readline())
+#text_file.close()
 
 search_links_array = [] # these are just examples, you have top pick people from your contacts, who allowed to browse their contacts!!!
 #search_links_array.append("https://www.linkedin.com/in/barbara-stampf-81610029/") # Europe
@@ -83,7 +84,7 @@ custom_search_array = []
 #     for occupation in linkedin_occupations:
 #         custom_search_array.append(f"https://www.linkedin.com/search/results/people/?keywords={quote(occupation)}%20{quote(location)}&network=%5B%22S%22%5D")
 custom_search_array = "https://www.linkedin.com/search/results/people/?activelyHiringForJobTitles=%5B%22-100%22%5D&geoUrn=%5B%22106057199%22%5D&keywords=tech&network=%5B%22S%22%2C%22O%22%5D&origin=FACETED_SEARCH"
-
+#custom_search_array = "https://www.linkedin.com/search/results/people/?activelyHiringForJobTitles=%5B%22-100%22%5D&geoUrn=%5B%22105178154%22%5D&keywords=tech&network=%5B%22S%22%2C%22O%22%5D&origin=FACETED_SEARCH" # dublin
 links = custom_search_array if custom_search_array else search_links_array
 
 def set_value_with_event(element, value):
@@ -251,11 +252,11 @@ def connect(name):
     except:
         return Status.FAILURE
     
-def connect_without_name():
+def connect_without_name(person_name):
     try:
         send_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//button[@aria-label="Send without a note"]')))
         action.click(send_button).perform()
-        
+        print('Conexções:', weekly_counter, person_name)
         # close the irritating popup "You are growing your network", "You are approaching to the weekly limit", etc.
         try:
             got_it_button = custom_wait(driver, 2, EC.presence_of_element_located, (By.XPATH, '//button//span[contains(., "Got it")]'))
@@ -267,15 +268,18 @@ def connect_without_name():
     except:
         return Status.FAILURE
 
-def hide_header_and_messenger():    
-    hide_header = wait.until(EC.presence_of_element_located((By.XPATH, '//header[@id="global-nav"]')))
-    driver.execute_script("arguments[0].style.display = 'none';", hide_header)
-    
-    hide_top_menu = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'scaffold-layout-toolbar')))
-    driver.execute_script("arguments[0].style.display = 'none';", hide_top_menu)
-    
-    hide_main_messenger = wait.until(EC.presence_of_element_located((By.XPATH, '//aside[@id="msg-overlay"]')))
-    driver.execute_script("arguments[0].style.display = 'none';", hide_main_messenger)
+def hide_header_and_messenger():
+    try:
+        hide_header = wait.until(EC.presence_of_element_located((By.XPATH, '//header[@id="global-nav"]')))
+        driver.execute_script("arguments[0].style.display = 'none';", hide_header)
+        
+        hide_top_menu = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'scaffold-layout-toolbar')))
+        driver.execute_script("arguments[0].style.display = 'none';", hide_top_menu)
+        
+        hide_main_messenger = wait.until(EC.presence_of_element_located((By.XPATH, '//aside[@id="msg-overlay"]')))
+        driver.execute_script("arguments[0].style.display = 'none';", hide_main_messenger)
+    except Exception:
+        None
 
 def find_connect_buttons_and_people_names_and_perform_connect():
     global weekly_counter
@@ -288,37 +292,42 @@ def find_connect_buttons_and_people_names_and_perform_connect():
         return # That is a temporary solution if You target only those who have the "Connect" button
     
     hide_header_and_messenger()
-    for connect_button in connect_buttons:
-        person = connect_button.find_element(By.XPATH, './/ancestor::li[@class="reusable-search__result-container"]')
-        person_name = person.find_element(By.XPATH, './/span[@dir="ltr"]//span[@aria-hidden="true"]').get_attribute('innerHTML').strip("\n <!---->")
-        click_and_wait(connect_button,0.5)
-        
-        if (weekly_counter<weekly_limit):
-            # sts = connect(person_name)  # the MAIN part is in this function! Linkedin has limited the number of personalized messages to a non-existent number, so that functionality is temporarily disabled :_(
-            if CONNECT_WITH_NAME == False:
-                sts = connect_without_name()  # the MAIN part is in this function!
-            else:
-                sts = connect(person_name) # just in case you want to see the script in its True glory
-            if sts == Status.FAILURE: continue
-            elif sts == Status.SUCCESS:
-                weekly_counter +=1
-                with open('linkedin-weekly-counter.txt', 'w') as a:
-                    a.writelines(str(weekly_counter))
-                time.sleep(random.uniform(0.2, 2)) # to reduce LinkedIn automation detection
-        elif(weekly_counter>=weekly_limit): # to reduce LinkedIn automation detection
-            os.system("cls") #clear screen from unnecessary logs since the operation has completed successfully
-            print("You've reached Your weekly limit of "+ str(weekly_limit) +" connection requests. Stop before LinkedIn blocks You! \n \nSincerely Yours, \nNAKIGOE.ORG\n")
-            driver.close()
-            driver.quit()
-                
+    try:
+        for connect_button in connect_buttons:
+            person = connect_button.find_element(By.XPATH, './/ancestor::li[@class="reusable-search__result-container"]')
+            person_name = person.find_element(By.XPATH, './/span[@dir="ltr"]//span[@aria-hidden="true"]').get_attribute('innerHTML').strip("\n <!---->")
+            click_and_wait(connect_button,0.5)
+
+
+            if (weekly_counter<weekly_limit):
+                # sts = connect(person_name)  # the MAIN part is in this function! Linkedin has limited the number of personalized messages to a non-existent number, so that functionality is temporarily disabled :_(
+                if CONNECT_WITH_NAME == False:
+                    sts = connect_without_name(person_name)  # the MAIN part is in this function!
+                else:
+                    sts = connect(person_name) # just in case you want to see the script in its True glory
+                if sts == Status.FAILURE: continue
+                elif sts == Status.SUCCESS:
+                    weekly_counter +=1
+                    #with open('linkedin-weekly-counter.txt', 'w') as a:
+                    #    a.writelines(str(weekly_counter))
+                    time.sleep(random.uniform(0.2, 2)) # to reduce LinkedIn automation detection
+            elif(weekly_counter>=weekly_limit): # to reduce LinkedIn automation detection
+                os.system("clear") #clear screen from unnecessary logs since the operation has completed successfully
+                print("You've reached Your weekly limit of "+ str(weekly_limit) +" connection requests. Stop before LinkedIn blocks You! \n \nSincerely Yours, \nNAKIGOE.ORG\n")
+                #driver.close()
+                driver.quit()
+    except:
+        None                          
 def main():
     check_cookies_and_login()
     
     for i, link in enumerate(links): 
         if i > 0: #fist link is already opened
-            driver.get(link)
-            eternal_wait(driver, 15, EC.presence_of_element_located, (By.XPATH, '//div[contains(@class,"global-nav__me")]')) # wait for the page to load
-            
+            try:
+                driver.get(link)
+                eternal_wait(driver, 15, EC.presence_of_element_located, (By.XPATH, '//div[contains(@class,"global-nav__me")]')) # wait for the page to load
+            except Exception:
+                None    
         if not custom_search_array: # that is, if you want to connect to the friend's friends, not the random custom search results
             action.click(wait.until(EC.element_to_be_clickable((By.XPATH, '//a[@class="ember-view"]')))).perform()
             eternal_wait(driver, 15, EC.presence_of_element_located, (By.XPATH, '//div[contains(@class,"global-nav__me")]')) # wait for the page to load
@@ -346,6 +355,11 @@ def main():
                 break
 
     # Close the only tab, will also close the browser.
-    driver.close()
-    driver.quit()
-main()
+    #driver.close()
+    #driver.quit()
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Aplicação parada pelo usuario")

@@ -2,3 +2,4 @@ linkedin-weekly-counter.txt
 config.py
 .venv
 auth
+__pycache__
